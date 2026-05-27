@@ -11,6 +11,6 @@ MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
 ALLOWED_EXTENSIONS = {'gpx'}
 
 # App
-DEBUG = True
+DEBUG = False
 HOST = '0.0.0.0'
-PORT = 5000
+PORT = 5001
