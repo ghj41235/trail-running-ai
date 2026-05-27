@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>越野跑AI助手 - 桌面端专业版</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-slate-900 text-white h-screen overflow-hidden">
+    <!-- ========== HEADER ========== -->
+    <header class="h-14 bg-slate-800 border-b border-slate-700 flex items-center px-6 justify-between shrink-0 select-none">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-mountain text-rose-500 text-xl"></i>
+            <h1 class="font-bold text-base tracking-wide text-white">
+                越野跑AI助手 
+                <span class="text-xs font-normal text-slate-400 ml-2">桌面端专业版</span>
+            </h1>
+        </div>
+        <div class="flex items-center gap-4 text-sm text-slate-400">
+            <span id="status-indicator">
+                <span class="status-dot online mr-1"></span>系统就绪
+            </span>
+            <span><i class="fas fa-user text-slate-500 mr-1"></i>越野跑者</span>
+        </div>
+    </header>
+
+    <!-- ========== MAIN LAYOUT ========== -->
+    <div class="flex h-[calc(100vh-3.5rem)]">
+        <!-- ========== LEFT SIDEBAR ========== -->
+        <aside class="w-56 bg-slate-800 border-r border-slate-700 flex flex-col shrink-0 select-none">
+            <!-- Navigation -->
+            <nav class="flex-1 py-3 space-y-0.5">
+                <div class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">核心功能</div>
+                
+                <button class="nav-btn active w-full text-left px-4 py-2.5 flex items-center gap-3" data-tab="route">
+                    <i class="fas fa-map-marked-alt w-5 text-center"></i>
+                    <span>路线分析</span>
+                </button>
+                
+                <button class="nav-btn w-full text-left px-4 py-2.5 flex items-center gap-3" data-tab="strategy">
+                    <i class="fas fa-robot w-5 text-center"></i>
+                    <span>AI策略</span>
+                </button>
+                
+                <button class="nav-btn w-full text-left px-4 py-2.5 flex items-center gap-3" data-tab="training">
+                    <i class="fas fa-dumbbell w-5 text-center"></i>
+                    <span>训练计划</span>
+                </button>
+                
+                <button class="nav-btn w-full text-left px-4 py-2.5 flex items-center gap-3" data-tab="coach">
+                    <i class="fas fa-comments w-5 text-center"></i>
+                    <span>AI教练</span>
+                </button>
+
+                <button class="nav-btn w-full text-left px-4 py-2.5 flex items-center gap-3" data-tab="equip">
+                    <i class="fas fa-hiking w-5 text-center"></i>
+                    <span>装备建议</span>
+                </button>
+                
+                <div class="px-4 py-2 mt-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">数据</div>
+                
+                <button class="nav-btn w-full text-left px-4 py-2.5 flex items-center gap-3" data-tab="history">
+                    <i class="fas fa-history w-5 text-center"></i>
+                    <span>历史记录</span>
+                </button>
+                
+                <button class="nav-btn w-full text-left px-4 py-2.5 flex items-center gap-3" data-tab="eco">
+                    <i class="fas fa-leaf w-5 text-center text-green-400"></i>
+                    <span>绿色环保</span>
+                </button>
+            </nav>
+            
+            <!-- Sidebar Status Panel -->
+            <div class="p-3 border-t border-slate-700">
+                <div class="bg-slate-700/40 rounded-lg p-3">
+                    <div class="text-xs text-slate-500 mb-1">当前状态</div>
+                    <div class="text-sm font-medium text-slate-300 truncate" id="sidebar-status">等待导入路线</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="flex-1 overflow-auto bg-slate-900 p-5" id="main-content">
+            
+            <!-- ==================== TAB: ROUTE ANALYSIS ==================== -->
+            <div id="tab-route" class="tab-page active">
+                <!-- Header -->
+                <div class="mb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white">路线分析</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">导入GPX文件，获取动态分段、风险评估与AI策略</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <label class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded cursor-pointer text-sm font-medium transition flex items-center gap-2">
+                            <i class="fas fa-upload"></i>导入GPX
+                            <input type="file" id="gpx-input" accept=".gpx" class="hidden">
+                        </label>
+                        <button id="load-demo" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm transition flex items-center gap-2">
+                            <i class="fas fa-vial"></i>示例路线
+                        </button>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-1">提示：可直接将 .gpx 文件拖入地图区域导入</div>
+                </div>
+
+                <!-- Main Grid -->
+                <div class="grid grid-cols-12 gap-4" style="height: calc(100vh - 9rem);">
+                    <!-- Left Column: Map + Charts -->
+                    <div class="col-span-8 flex flex-col gap-4">
+                        <!-- Map -->
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-1 relative" style="height: 45%;">
+                            <div id="map" class="w-full h-full rounded"></div>
+                            <div id="map-drop-hint" class="absolute inset-0 flex items-center justify-center bg-black/60 rounded hidden pointer-events-none">
+                                <div class="text-white text-lg font-medium"><i class="fas fa-file-import mr-2"></i>释放以导入 GPX 文件</div>
+                            </div>
+                        </div>
+                        <!-- Charts Row -->
+                        <div class="flex-1 grid grid-cols-2 gap-4 min-h-0">
+                            <div class="bg-slate-800 rounded-lg border border-slate-700 p-3 flex flex-col">
+                                <h3 class="text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                                    <i class="fas fa-chart-area mr-1 text-rose-400"></i>海拔剖面
+                                </h3>
+                                <div id="ele-chart" class="flex-1 min-h-0"></div>
+                            </div>
+                            <div class="bg-slate-800 rounded-lg border border-slate-700 p-3 flex flex-col">
+                                <h3 class="text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                                    <i class="fas fa-chart-bar mr-1 text-rose-400"></i>分段坡度
+                                </h3>
+                                <div id="grade-chart" class="flex-1 min-h-0"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Metrics + Risks -->
+                    <div class="col-span-4 flex flex-col gap-4">
+                        <!-- Route Metrics -->
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4">
+                            <h3 class="text-xs font-medium text-slate-400 mb-3 uppercase tracking-wider">
+                                <i class="fas fa-ruler-combined mr-1 text-rose-400"></i>路线指标
+                            </h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="metric-card">
+                                    <div class="text-xs text-slate-500">总距离</div>
+                                    <div class="text-xl font-bold text-white" id="m-dist">--</div>
+                                    <div class="text-xs text-slate-600">km</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="text-xs text-slate-500">累计爬升</div>
+                                    <div class="text-xl font-bold text-rose-400" id="m-ascent">--</div>
+                                    <div class="text-xs text-slate-600">m</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="text-xs text-slate-500">累计下降</div>
+                                    <div class="text-xl font-bold text-blue-400" id="m-descent">--</div>
+                                    <div class="text-xs text-slate-600">m</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="text-xs text-slate-500">最高海拔</div>
+                                    <div class="text-xl font-bold text-white" id="m-maxele">--</div>
+                                    <div class="text-xs text-slate-600">m</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="text-xs text-slate-500">最低海拔</div>
+                                    <div class="text-xl font-bold text-white" id="m-minele">--</div>
+                                    <div class="text-xs text-slate-600">m</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="text-xs text-slate-500">平均坡度</div>
+                                    <div class="text-xl font-bold text-white" id="m-avggrad">--</div>
+                                    <div class="text-xs text-slate-600">%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Warnings -->
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4 flex-1 flex flex-col min-h-0">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                                    <i class="fas fa-shield-alt mr-1 text-yellow-500"></i>风险预警
+                                </h3>
+                                <span class="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-400" id="risk-count">0 条</span>
+                            </div>
+                            <div id="risk-list" class="space-y-2 overflow-y-auto flex-1 pr-1">
+                                <div class="text-center py-8">
+                                    <i class="fas fa-check-circle text-green-500/40 text-4xl mb-2"></i>
+                                    <p class="text-sm text-slate-600">导入路线后显示智能分析结果</p>
+                                    <p class="text-xs text-slate-700 mt-1">仅显示真实危险路段，平缓路段自动合并</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: AI STRATEGY ==================== -->
+            <div id="tab-strategy" class="tab-page">
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-white">AI配速策略</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">基于体能-地形耦合模型的分段配速建议</p>
+                </div>
+
+                <!-- Route Summary Cards -->
+                <div class="grid grid-cols-3 gap-3 mb-4" id="route-summary-cards">
+                    <div class="bg-slate-800 rounded-lg border border-slate-700 p-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-exclamation-triangle text-red-400"></i>
+                            <span class="text-xs text-slate-400">危险路段</span>
+                            <span class="text-xs bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded ml-auto" id="summary-danger-count">--</span>
+                        </div>
+                        <div id="summary-danger-list" class="text-xs text-slate-500 space-y-1 max-h-20 overflow-y-auto">
+                            <span class="text-slate-600">分析路线后显示</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 rounded-lg border border-slate-700 p-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-hand-rock text-orange-400"></i>
+                            <span class="text-xs text-slate-400">需攀爬</span>
+                            <span class="text-xs bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded ml-auto" id="summary-scramble-count">--</span>
+                        </div>
+                        <div id="summary-scramble-list" class="text-xs text-slate-500 space-y-1 max-h-20 overflow-y-auto">
+                            <span class="text-slate-600">分析路线后显示</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 rounded-lg border border-slate-700 p-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-bolt text-green-400"></i>
+                            <span class="text-xs text-slate-400">可提速</span>
+                            <span class="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded ml-auto" id="summary-speedup-count">--</span>
+                        </div>
+                        <div id="summary-speedup-list" class="text-xs text-slate-500 space-y-1 max-h-20 overflow-y-auto">
+                            <span class="text-slate-600">分析路线后显示</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-4" style="height: calc(100vh - 14rem);">
+                    <!-- Left: Strategy Table -->
+                    <div class="col-span-7 bg-slate-800 rounded-lg border border-slate-700 p-4 flex flex-col h-full">
+                        <div class="flex justify-between items-center mb-3 shrink-0">
+                            <h3 class="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                                <i class="fas fa-list-ol mr-1 text-rose-400"></i>分段配速详情
+                            </h3>
+                            <span class="text-xs text-slate-500" id="strategy-header">请先分析路线</span>
+                        </div>
+                        <div class="flex-1 overflow-auto min-h-0">
+                            <table class="data-table strategy-table">
+                                <thead class="sticky top-0 bg-slate-800 z-10">
+                                    <tr>
+                                        <th>路段</th>
+                                        <th>地形</th>
+                                        <th>坡度</th>
+                                        <th>建议配速</th>
+                                        <th>状态预警</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="strategy-body">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-12 text-slate-600">
+                                            <i class="fas fa-route text-2xl mb-2 opacity-30"></i>
+                                            <p class="text-sm">分析路线后显示配速策略</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Right: State Predictions -->
+                    <div class="col-span-5 flex flex-col gap-4 h-full">
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4 flex-1 flex flex-col min-h-0">
+                            <h3 class="text-xs font-medium text-slate-400 mb-3 uppercase tracking-wider shrink-0">
+                                <i class="fas fa-heartbeat mr-1 text-rose-400"></i>体能状态预测
+                            </h3>
+                            <div id="state-preview" class="space-y-2 overflow-y-auto flex-1 pr-1 min-h-0">
+                                <div class="text-sm text-slate-600 text-center py-8">
+                                    <i class="fas fa-chart-line text-2xl mb-2 opacity-30"></i>
+                                    <p>加载路线后显示体能状态预测</p>
+                                    <p class="text-xs text-slate-700 mt-1">M:肌肉 | C:心肺 | G:糖原</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Legend -->
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4 shrink-0">
+                            <h3 class="text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">模型说明</h3>
+                            <div class="text-xs text-slate-500 space-y-1.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                    <span>M (肌肉状态): 100= rested, &lt;40=疲劳</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span>C (心肺状态): 50= rested, &gt;80=高压</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                                    <span>G (糖原储备): 400g= full, &lt;100g=不足</span>
+                                </div>
+                                <div class="mt-2 pt-2 border-t border-slate-700 text-slate-600">
+                                    基于"体能-地形"双向耦合微分方程演化
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: TRAINING PLAN ==================== -->
+            <div id="tab-training" class="tab-page">
+                <div class="mb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white">AI训练计划</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">由Kimi大模型驱动，失败时自动降级本地算法</p>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <select id="plan-level" class="bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-rose-500">
+                            <option value="beginner">入门</option>
+                            <option value="intermediate" selected>中级</option>
+                            <option value="advanced">高级</option>
+                        </select>
+                        <select id="plan-target" class="bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-rose-500">
+                            <option value="25">25km</option>
+                            <option value="50" selected>50km</option>
+                            <option value="100">100km</option>
+                        </select>
+                        <select id="plan-weeks" class="bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-rose-500">
+                            <option value="8">8周</option>
+                            <option value="12" selected>12周</option>
+                            <option value="16">16周</option>
+                        </select>
+                        <select id="plan-weekly" class="bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-rose-500">
+                            <option value="20">20km/周</option>
+                            <option value="30">30km/周</option>
+                            <option value="40" selected>40km/周</option>
+                            <option value="60">60km/周</option>
+                        </select>
+                        <button id="btn-gen-plan" class="bg-rose-600 hover:bg-rose-500 px-4 py-1.5 rounded text-sm font-medium transition flex items-center gap-2">
+                            <i class="fas fa-magic"></i>AI生成
+                        </button>
+                    </div>
+                </div>
+                <div id="plan-container" class="bg-slate-800 rounded-lg border border-slate-700 p-6" style="min-height: 400px;">
+                    <div class="text-center text-slate-600 py-12">
+                        <i class="fas fa-robot text-4xl mb-3 opacity-30"></i>
+                        <p class="text-sm">设置参数后点击"AI生成"</p>
+                        <p class="text-xs mt-2 text-slate-700">由Kimi大模型驱动，失败时自动降级本地算法</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: AI COACH ==================== -->
+            <div id="tab-coach" class="tab-page">
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-white">AI教练</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">越野跑训练咨询、装备建议、比赛策略</p>
+                </div>
+                <div class="bg-slate-800 rounded-lg border border-slate-700 flex flex-col" style="height: calc(100vh - 9rem);">
+                    <!-- Chat Messages -->
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                        <div class="chat-message ai">
+                            <div class="font-medium text-rose-400 mb-1 text-sm"><i class="fas fa-robot mr-1"></i>AI教练</div>
+                            你好！我是你的越野跑AI教练。我可以帮你：<br>
+                            • 制定和调整训练计划<br>
+                            • 解答越野跑技术问题<br>
+                            • 提供装备选择建议<br>
+                            • 分析比赛策略<br><br>
+                            有什么我可以帮你的吗？
+                        </div>
+                    </div>
+                    <!-- Chat Input -->
+                    <div class="p-3 border-t border-slate-700">
+                        <div class="flex gap-2">
+                            <input type="text" id="chat-input" 
+                                class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition"
+                                placeholder="输入你的问题...">
+                            <button id="btn-chat-send" class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-lg transition">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: EQUIPMENT ==================== -->
+            <div id="tab-equip" class="tab-page">
+                <div class="mb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white">装备建议</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">基于路线特征的智能装备推荐</p>
+                    </div>
+                    <button onclick="window.app.loadEquipment()" class="bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded text-sm transition flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i>刷新推荐
+                    </button>
+                </div>
+                <div id="equip-content" class="space-y-4">
+                    <div class="text-center py-12 text-slate-600">
+                        <i class="fas fa-hiking text-4xl mb-3 opacity-30"></i>
+                        <p class="text-sm">请先分析路线，获取智能装备推荐</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: HISTORY ==================== -->
+            <div id="tab-history" class="tab-page">
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-white">历史记录</h2>
+                    <button id="btn-clear-history" class="text-xs text-slate-500 hover:text-slate-300 transition flex items-center gap-1">
+                        <i class="fas fa-trash"></i>清空记录
+                    </button>
+                </div>
+                <div id="history-list" class="space-y-2">
+                    <div class="text-center py-12 text-slate-600">
+                        <i class="fas fa-history text-4xl mb-3 opacity-30"></i>
+                        <p class="text-sm">暂无历史记录</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: GREEN ECO ==================== -->
+            <div id="tab-eco" class="tab-page">
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-white">绿色环保</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">跑步减碳数据与环保成就</p>
+                </div>
+                <div class="grid grid-cols-12 gap-4">
+                    <!-- Stats Cards -->
+                    <div class="col-span-3">
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4 mb-3">
+                            <div class="text-xs text-slate-500 mb-1">总跑步次数</div>
+                            <div class="text-2xl font-bold text-white" id="eco-runs">--</div>
+                        </div>
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4 mb-3">
+                            <div class="text-xs text-slate-500 mb-1">总距离</div>
+                            <div class="text-2xl font-bold text-blue-400" id="eco-distance">--</div>
+                            <div class="text-xs text-slate-600">km</div>
+                        </div>
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4 mb-3">
+                            <div class="text-xs text-slate-500 mb-1">减碳量</div>
+                            <div class="text-2xl font-bold text-green-400" id="eco-carbon">--</div>
+                            <div class="text-xs text-slate-600">kg CO₂</div>
+                        </div>
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4">
+                            <div class="text-xs text-slate-500 mb-1">绿色积分</div>
+                            <div class="text-2xl font-bold text-yellow-400" id="eco-points">--</div>
+                        </div>
+                    </div>
+                    <!-- Level + Chart -->
+                    <div class="col-span-9">
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4 mb-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <div class="text-xs text-slate-500">绿色等级</div>
+                                    <div class="text-lg font-bold text-green-400" id="eco-level">--</div>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2.5">
+                                <div id="eco-progress" class="bg-green-500 h-2.5 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800 rounded-lg border border-slate-700 p-4">
+                            <h3 class="text-xs font-medium text-slate-400 mb-3 uppercase tracking-wider">
+                                <i class="fas fa-chart-line mr-1 text-green-400"></i>月度减碳趋势
+                            </h3>
+                            <div id="carbon-chart" style="height: 280px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ========== LOADING OVERLAY ========== -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-10 h-10 border-3 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p class="text-sm text-slate-300" id="loading-text">分析中...</p>
+        </div>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

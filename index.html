@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>越野跑AI助手 - 桌面端专业版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .feature-card { transition: all 0.3s ease; }
+        .feature-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <!-- Hero Section -->
+    <div class="max-w-6xl mx-auto px-6 py-16">
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center gap-3 mb-6">
+                <i class="fas fa-mountain text-rose-500 text-4xl"></i>
+                <h1 class="text-4xl font-bold tracking-wide">越野跑AI助手</h1>
+            </div>
+            <p class="text-xl text-slate-400 mb-2">桌面端专业版</p>
+            <p class="text-slate-500 max-w-2xl mx-auto">
+                智能动态分段 + 体能-地形耦合模型 + Kimi大模型AI策略
+            </p>
+            <div class="mt-8 flex gap-4 justify-center">
+                <a href="http://localhost:5000" class="bg-rose-600 hover:bg-rose-500 px-6 py-3 rounded-lg font-medium transition inline-flex items-center gap-2">
+                    <i class="fas fa-play"></i>启动应用
+                </a>
+                <a href="#features" class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-medium transition inline-flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i>功能介绍
+                </a>
+            </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6 mb-12">
+            <h3 class="text-lg font-semibold mb-4"><i class="fas fa-code text-rose-400 mr-2"></i>技术架构</h3>
+            <div class="grid grid-cols-4 gap-4 text-center">
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <i class="fab fa-python text-2xl text-yellow-400 mb-2"></i>
+                    <div class="text-sm font-medium">Flask 后端</div>
+                    <div class="text-xs text-slate-500">Python 3</div>
+                </div>
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <i class="fas fa-map-marked-alt text-2xl text-green-400 mb-2"></i>
+                    <div class="text-sm font-medium">Leaflet 地图</div>
+                    <div class="text-xs text-slate-500">OpenTopoMap</div>
+                </div>
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <i class="fas fa-chart-line text-2xl text-blue-400 mb-2"></i>
+                    <div class="text-sm font-medium">ECharts 图表</div>
+                    <div class="text-xs text-slate-500">海拔/坡度</div>
+                </div>
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <i class="fas fa-robot text-2xl text-purple-400 mb-2"></i>
+                    <div class="text-sm font-medium">Kimi AI</div>
+                    <div class="text-xs text-slate-500">moonshot-v1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div id="features" class="grid grid-cols-3 gap-6 mb-12">
+            <div class="feature-card bg-slate-800 rounded-xl border border-slate-700 p-6">
+                <div class="w-12 h-12 bg-rose-500/20 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-map-marked-alt text-rose-400 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-lg mb-2">路线分析</h3>
+                <p class="text-sm text-slate-400">GPX文件导入，智能动态分段，地形图显示，海拔剖面图，坡度分析</p>
+            </div>
+            <div class="feature-card bg-slate-800 rounded-xl border border-slate-700 p-6">
+                <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-shield-alt text-yellow-400 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-lg mb-2">风险预警</h3>
+                <p class="text-sm text-slate-400">仅显示真实危险路段，相邻风险自动合并，最多6条预警，红黄分级</p>
+            </div>
+            <div class="feature-card bg-slate-800 rounded-xl border border-slate-700 p-6">
+                <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-robot text-purple-400 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-lg mb-2">AI配速策略</h3>
+                <p class="text-sm text-slate-400">基于体能-地形耦合模型的分段配速建议，M/C/G三状态预测</p>
+            </div>
+            <div class="feature-card bg-slate-800 rounded-xl border border-slate-700 p-6">
+                <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-dumbbell text-blue-400 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-lg mb-2">AI训练计划</h3>
+                <p class="text-sm text-slate-400">Kimi大模型生成，失败自动降级本地算法，周期化训练安排</p>
+            </div>
+            <div class="feature-card bg-slate-800 rounded-xl border border-slate-700 p-6">
+                <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-comments text-green-400 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-lg mb-2">AI教练</h3>
+                <p class="text-sm text-slate-400">越野跑训练咨询、装备建议、比赛策略，200字精简回答</p>
+            </div>
+            <div class="feature-card bg-slate-800 rounded-xl border border-slate-700 p-6">
+                <div class="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-leaf text-emerald-400 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-lg mb-2">绿色环保</h3>
+                <p class="text-sm text-slate-400">跑步减碳数据追踪，绿色等级系统，月度减碳趋势图表</p>
+            </div>
+        </div>
+
+        <!-- How to Run -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <h3 class="text-lg font-semibold mb-4"><i class="fas fa-terminal text-rose-400 mr-2"></i>本地运行指南</h3>
+            <div class="bg-slate-900 rounded-lg p-4 font-mono text-sm text-slate-300 space-y-2">
+                <p><span class="text-slate-500"># 1. 安装依赖</span></p>
+                <p>pip install flask flask-cors gpxpy requests werkzeug</p>
+                <p class="mt-2"><span class="text-slate-500"># 2. 配置Kimi API Key（可选，不配置则使用本地算法）</span></p>
+                <p>export KIMI_API_KEY="your-api-key-here"</p>
+                <p class="mt-2"><span class="text-slate-500"># 3. 启动服务</span></p>
+                <p>python app.py</p>
+                <p class="mt-2"><span class="text-slate-500"># 4. 浏览器访问</span></p>
+                <p>http://localhost:5000</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-12 text-slate-600 text-sm">
+            <p>越野跑AI助手 v2.0 | 基于开源技术构建</p>
+            <p class="mt-1">gpxpy + Leaflet + ECharts + Flask + Kimi API</p>
+        </div>
+    </div>
+</body>
+</html>
